@@ -56,10 +56,11 @@ export default function RecentAlerts({ alerts }: RecentAlertsProps) {
                   {alert.title}
                 </h3>
               </div>
-              <p className="text-xs text-slate-400">
-                <span className="font-medium text-slate-300">{alert.camera}</span> •{" "}
-                {alert.location}
-              </p>
+              {alert.description && (
+                <p className="text-xs text-slate-400 max-w-md truncate">
+                  {alert.description}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between sm:justify-end gap-3 text-xs">

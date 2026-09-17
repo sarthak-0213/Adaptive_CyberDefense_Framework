@@ -1,28 +1,9 @@
-export type CameraStatus = "online" | "offline" | "warning";
-
-export interface Camera {
-  id: string;
-  name: string;
-  location: string;
-  ipAddress: string;
-  status: CameraStatus;
-  health: number;
-  violations: number;
-  fps: number;
-  resolution: string;
-  lastActive: string;
-  streamType: string;
-  previewBg: string;
-}
-
 export type AlertSeverity = "critical" | "high" | "medium" | "low";
 export type AlertStatus = "active" | "investigating" | "resolved";
 
 export interface Alert {
   id: string;
   title: string;
-  camera: string;
-  location: string;
   timestamp: string;
   rawTimestamp: number;
   severity: AlertSeverity;
@@ -47,7 +28,7 @@ export interface ActivityItem {
   id: string;
   timestamp: string;
   title: string;
-  category: "security" | "system" | "camera" | "user";
+  category: "security" | "system" | "user";
   severity: "info" | "warning" | "critical";
   details: string;
 }
@@ -77,7 +58,7 @@ export interface SecurityOverview {
 export interface ReportItem {
   id: string;
   title: string;
-  type: "Security Audit" | "Incident Log" | "Camera Performance" | "MTD Analytics";
+  type: "Security Audit" | "Incident Log" | "MTD Analytics";
   generatedAt: string;
   size: string;
   format: "PDF" | "CSV" | "JSON";

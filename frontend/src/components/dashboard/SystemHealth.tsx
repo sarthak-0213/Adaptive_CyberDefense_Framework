@@ -58,7 +58,7 @@ export default function SystemHealth({ health }: SystemHealthProps) {
           <div className="flex items-center justify-between text-xs mb-1.5">
             <span className="flex items-center gap-1.5 text-slate-300 font-medium">
               <HardDrive className="h-3.5 w-3.5 text-purple-400" />
-              Surveillance Storage
+              System Storage
             </span>
             <span className="text-slate-400 font-mono">{health.storageUsage}%</span>
           </div>

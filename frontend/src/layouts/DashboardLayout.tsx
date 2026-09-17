@@ -2,7 +2,6 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard,
-  Camera,
   TriangleAlert,
   Shield,
   Activity,
@@ -21,7 +20,6 @@ import { PageTransition } from "../components/PageTransition";
 
 const menuItems = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard },
-  { name: "Cameras", path: "/cameras", icon: Camera },
   { name: "Alerts", path: "/alerts", icon: TriangleAlert },
   { name: "Security", path: "/security", icon: Shield },
   { name: "Threat Analytics", path: "/threats", icon: Activity },

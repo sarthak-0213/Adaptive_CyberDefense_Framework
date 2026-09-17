@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from app.models.alert import Alert
-from app.models.camera import Camera
 from app.models.honeypot import HoneypotLog
 from app.models.threat_block import ThreatBlock
 from app.models.threat_event import ThreatEvent, ThreatScore
@@ -58,7 +57,6 @@ class ReportService:
         ).count()
         blocked_ips_count = db.query(ThreatBlock).filter(ThreatBlock.status == "blocked").count()
         active_alerts_count = db.query(Alert).filter(Alert.status == "active").count()
-        camera_violations_count = db.query(Alert).count()
         total_audit_logs = db.query(AuditLog).count()
         mtd_rotations_count = len(mtd_service.history)
 
@@ -72,7 +70,6 @@ class ReportService:
             active_alerts_count=active_alerts_count,
             mtd_rotations_count=mtd_rotations_count,
             total_audit_logs=total_audit_logs,
-            camera_violations_count=camera_violations_count,
             last_generated=last_gen_str,
         )
 
@@ -99,18 +96,8 @@ class ReportService:
                 generatedAt=now_str,
                 size=f"{max(1, (summary.honeypot_hits_24h + summary.active_alerts_count) * 2)} KB",
                 format="JSON",
-                description="Detailed list of active safety violation alerts, honeypot trigger events, and suspicious activity logs.",
+                description="Detailed list of active security violation alerts, honeypot trigger events, and suspicious activity logs.",
                 download_url="/api/v1/reports/export/incident_log",
-            ),
-            ReportItem(
-                id="camera_performance",
-                title="Camera Safety & Detection Report",
-                type="Camera Performance",
-                generatedAt=now_str,
-                size=f"{max(1, summary.camera_violations_count * 2)} KB",
-                format="JSON",
-                description="PPE compliance metrics, camera operational health, and historical safety violation counts.",
-                download_url="/api/v1/reports/export/camera_performance",
             ),
             ReportItem(
                 id="mtd_analytics",
@@ -202,13 +189,12 @@ class ReportService:
 
             for a in alerts:
                 data.append({
-                    "category": "SafetyAlert",
+                    "category": "SecurityAlert",
                     "id": a.id,
                     "title": a.title,
                     "violation_type": a.violation_type,
                     "severity": a.severity,
                     "status": a.status,
-                    "camera_id": a.camera_id,
                     "timestamp": a.timestamp.isoformat() if a.timestamp else None,
                 })
             for h in honeypots:
@@ -219,32 +205,6 @@ class ReportService:
                     "ip_address": h.ip_address,
                     "user_agent": h.user_agent,
                     "timestamp": h.timestamp.isoformat() if h.timestamp else None,
-                })
-
-        elif report_type == "camera_performance":
-            title = "Camera Safety & Detection Report"
-            description = "Camera health, location stats, and PPE violation counts."
-
-            cameras = db.query(Camera).all()
-            alerts = db.query(Alert).all()
-
-            summary_info = {
-                "total_cameras": len(cameras),
-                "online_cameras": sum(1 for c in cameras if c.status == "online"),
-                "total_violations_recorded": len(alerts),
-            }
-
-            for c in cameras:
-                data.append({
-                    "category": "Camera",
-                    "id": c.id,
-                    "name": c.name,
-                    "location": c.location,
-                    "ip_address": c.ip_address,
-                    "status": c.status,
-                    "health": c.health,
-                    "violations": c.violations,
-                    "resolution": c.resolution,
                 })
 
         elif report_type == "mtd_analytics":

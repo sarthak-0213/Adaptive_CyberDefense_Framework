@@ -9,7 +9,6 @@
  */
 
 import type {
-  Camera,
   Alert,
   SystemHealthSummary,
   ActivityItem,
@@ -18,24 +17,6 @@ import type {
   ReportItem,
   UserSettingsData,
 } from "../types/dashboard";
-
-/** @deprecated Temporary Mock Data Fallback */
-export const MOCK_CAMERAS: Camera[] = [
-  {
-    id: "cam-01",
-    name: "Main Entrance Vault Alpha",
-    location: "Building A - Perimeter Entry",
-    ipAddress: "192.168.10.101",
-    status: "online",
-    health: 98,
-    violations: 0,
-    fps: 30,
-    resolution: "4K (3840x2160)",
-    lastActive: "Just now",
-    streamType: "RTSP / H.265",
-    previewBg: "from-slate-800 to-cyan-950",
-  },
-];
 
 /** @deprecated Temporary Mock Data Fallback */
 export const MOCK_ALERTS: Alert[] = [];

@@ -7,7 +7,6 @@ export interface ReportSummary {
   active_alerts_count: number;
   mtd_rotations_count: number;
   total_audit_logs: number;
-  camera_violations_count: number;
   last_generated?: string;
 }
 

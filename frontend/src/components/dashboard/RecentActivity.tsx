@@ -1,4 +1,4 @@
-import { Activity, ShieldAlert, Camera, User, Server } from "lucide-react";
+import { Activity, ShieldAlert, User, Server } from "lucide-react";
 import type { ActivityItem } from "../../types/dashboard";
 
 interface RecentActivityProps {
@@ -10,8 +10,6 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
     switch (category) {
       case "security":
         return <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />;
-      case "camera":
-        return <Camera className="h-3.5 w-3.5 text-cyan-400" />;
       case "user":
         return <User className="h-3.5 w-3.5 text-indigo-400" />;
       case "system":

@@ -87,7 +87,7 @@ export default function Alerts() {
             </span>
           </div>
           <p className="mt-1 text-sm text-slate-400">
-            Real-time PPE violation alerts, safety incidents & detection pipeline results.
+            Real-time security incident alerts, system violations & threat detection events.
           </p>
         </div>
 
@@ -130,8 +130,6 @@ export default function Alerts() {
                 <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase">
                   <th className="py-3 px-4">Severity</th>
                   <th className="py-3 px-4">Title</th>
-                  <th className="py-3 px-4">Camera</th>
-                  <th className="py-3 px-4">Location</th>
                   <th className="py-3 px-4">Time</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
@@ -152,13 +150,11 @@ export default function Alerts() {
                     <td className="py-3 px-4">
                       <span className="font-semibold text-slate-200 text-sm">{alert.title}</span>
                       {alert.description && (
-                        <p className="mt-0.5 text-[10px] text-slate-500 max-w-[200px] truncate">
+                        <p className="mt-0.5 text-[10px] text-slate-500 max-w-[300px] truncate">
                           {alert.description}
                         </p>
                       )}
                     </td>
-                    <td className="py-3 px-4 font-medium text-slate-300">{alert.camera}</td>
-                    <td className="py-3 px-4 text-slate-400">{alert.location}</td>
                     <td className="py-3 px-4">
                       <span className="flex items-center gap-1 text-slate-400">
                         <Clock className="h-3.5 w-3.5 text-slate-500" />
@@ -197,9 +193,9 @@ export default function Alerts() {
             <ShieldAlert className="h-8 w-8" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-white">No Safety Alerts</h3>
+            <h3 className="text-xl font-bold text-white">No Security Alerts</h3>
             <p className="text-sm text-slate-400 max-w-md mx-auto">
-              Safety alerts will appear here when YOLO PPE violations are detected by the surveillance pipeline.
+              Security alerts will appear here when threats or violation incidents are detected.
             </p>
           </div>
         </div>

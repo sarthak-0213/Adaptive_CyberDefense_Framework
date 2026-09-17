@@ -2,19 +2,16 @@ import { useEffect, useState } from "react";
 import { Shield, RefreshCw, Server, UserCheck } from "lucide-react";
 import StatCard from "../components/dashboard/StatCard";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
-import CameraOverview from "../components/dashboard/CameraOverview";
 import RecentAlerts from "../components/dashboard/RecentAlerts";
 import { AnimatedCard } from "../components/AnimatedCard";
 import { useAuthStore } from "../store/authStore";
 import { getMTDStatus, type MTDStatusResponse } from "../api/mtd";
-import { getCameras } from "../api/video";
 import { getAlerts } from "../api/alerts";
-import type { Camera, Alert } from "../types/dashboard";
+import type { Alert } from "../types/dashboard";
 
 export default function Dashboard() {
   const user = useAuthStore((state) => state.user);
   const [mtdStatus, setMtdStatus] = useState<MTDStatusResponse | null>(null);
-  const [cameras, setCameras] = useState<Camera[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,13 +19,11 @@ export default function Dashboard() {
   const fetchDashboardData = async () => {
     try {
       setError(null);
-      const [statusData, cameraData, alertData] = await Promise.all([
+      const [statusData, alertData] = await Promise.all([
         getMTDStatus(),
-        getCameras(),
         getAlerts(),
       ]);
       setMtdStatus(statusData);
-      setCameras(cameraData);
       setAlerts(alertData);
     } catch (err: any) {
       console.error("Dashboard fetch error:", err);
@@ -40,7 +35,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-    // Auto-refresh metrics every 5 seconds for real-time surveillance feel
     const interval = setInterval(fetchDashboardData, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -109,12 +103,9 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Live Video Analytics and Alert Panels */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      {/* Security Alerts Section */}
+      <div className="w-full">
         <AnimatedCard delay={0.1}>
-          <CameraOverview cameras={cameras} />
-        </AnimatedCard>
-        <AnimatedCard delay={0.2}>
           <RecentAlerts alerts={alerts} />
         </AnimatedCard>
       </div>

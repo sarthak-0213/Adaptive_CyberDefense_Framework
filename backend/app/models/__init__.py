@@ -1,7 +1,6 @@
 from app.core.database import Base
 
 from app.models.user import User, TokenBlacklist, ActiveSession
-from app.models.camera import Camera
 from app.models.alert import Alert
 from app.models.honeypot import HoneypotLog
 from app.models.notification_log import NotificationLog

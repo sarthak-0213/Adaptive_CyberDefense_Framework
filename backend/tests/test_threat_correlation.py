@@ -99,25 +99,7 @@ def test_invalid_refresh_token_event(client, db_session):
     assert event.score == 15.0
 
 
-# ── 7. on_camera_anomaly event ────────────────────────────────────────────────
-
-def test_camera_anomaly_event(client, db_session):
-    svc = fresh_svc()
-    svc.on_camera_anomaly(
-        db=db_session, ip_address="10.1.0.7",
-        camera_id=3, anomaly_type="stream_disconnect_abuse"
-    )
-
-    event = db_session.query(ThreatEvent).filter(
-        ThreatEvent.ip_address == "10.1.0.7",
-        ThreatEvent.event_type == "camera_anomaly",
-    ).first()
-    assert event is not None
-    assert event.source == "surveillance"
-    assert event.score == 20.0
-
-
-# ── 8. on_mtd_alias_enumeration event ────────────────────────────────────────
+# ── 7. on_mtd_alias_enumeration event ────────────────────────────────────────
 
 def test_mtd_alias_enumeration_event(client, db_session):
     svc = fresh_svc()

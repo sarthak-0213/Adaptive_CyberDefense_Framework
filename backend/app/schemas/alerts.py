@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 
 class AlertCreate(BaseModel):
-    camera_id: int
     title: str
     violation_type: str
     severity: str = "medium"
@@ -19,10 +18,7 @@ class AlertUpdateStatus(BaseModel):
 
 class AlertResponse(BaseModel):
     id: int
-    camera_id: int
     title: str
-    camera: str
-    location: str
     timestamp: str
     rawTimestamp: float
     severity: str
@@ -36,12 +32,6 @@ class AlertResponse(BaseModel):
 
     @classmethod
     def model_validate(cls, obj, **kwargs):
-        camera_name = "Unknown Camera"
-        location = "Unknown Location"
-        if obj.camera:
-            camera_name = obj.camera.name
-            location = obj.camera.location
-
         raw_ts = 0.0
         timestamp_str = "N/A"
         if isinstance(obj.timestamp, datetime):
@@ -52,10 +42,7 @@ class AlertResponse(BaseModel):
 
         return cls(
             id=obj.id,
-            camera_id=obj.camera_id,
             title=obj.title,
-            camera=camera_name,
-            location=location,
             timestamp=timestamp_str,
             rawTimestamp=raw_ts,
             severity=obj.severity,

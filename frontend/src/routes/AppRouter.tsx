@@ -4,7 +4,6 @@ import DashboardLayout from "../layouts/DashboardLayout";
 
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
-import Cameras from "../pages/Cameras";
 import Alerts from "../pages/Alerts";
 import Security from "../pages/Security";
 import ThreatAnalytics from "../pages/ThreatAnalytics";
@@ -26,7 +25,6 @@ export default function AppRouter() {
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="cameras" element={<Cameras />} />
         <Route path="alerts" element={<Alerts />} />
         <Route path="security" element={<Security />} />
         <Route path="threats" element={<ThreatAnalytics />} />
