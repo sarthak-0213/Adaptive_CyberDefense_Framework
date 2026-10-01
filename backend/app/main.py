@@ -16,7 +16,9 @@ from app.routers.audit import router as audit_router
 from app.routers.rbac import router as rbac_router
 from app.routers.reports import router as reports_router
 from app.routers.settings import router as settings_router
+from app.routers.security_assessment import router as security_assessment_router
 from app.services.mtd_service import mtd_service
+
 
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
@@ -226,6 +228,8 @@ app.include_router(audit_router, prefix=settings.API_V1_STR)
 app.include_router(rbac_router, prefix=settings.API_V1_STR)
 app.include_router(reports_router, prefix=settings.API_V1_STR)
 app.include_router(settings_router, prefix=settings.API_V1_STR)
+app.include_router(security_assessment_router, prefix=settings.API_V1_STR)
+
 
 
 @app.get("/")

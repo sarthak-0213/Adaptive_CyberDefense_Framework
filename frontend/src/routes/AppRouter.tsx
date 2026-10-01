@@ -9,8 +9,10 @@ import Security from "../pages/Security";
 import ThreatAnalytics from "../pages/ThreatAnalytics";
 import Reports from "../pages/Reports";
 import Settings from "../pages/Settings";
+import SecurityAssessment from "../pages/SecurityAssessment";
 
 import ProtectedRoute from "./ProtectedRoute";
+
 
 export default function AppRouter() {
   return (
@@ -29,8 +31,10 @@ export default function AppRouter() {
         <Route path="security" element={<Security />} />
         <Route path="threats" element={<ThreatAnalytics />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="security-assessment" element={<SecurityAssessment />} />
         <Route path="settings" element={<Settings />} />
       </Route>
+
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

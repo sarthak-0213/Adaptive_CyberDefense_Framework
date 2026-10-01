@@ -119,7 +119,18 @@ class ReportService:
                 description="Complete administrative action history, sensitive configuration updates, and report exports.",
                 download_url="/api/v1/reports/export/audit_log",
             ),
+            ReportItem(
+                id="security_assessment",
+                title="Security Assessment Report",
+                type="Security Assessment",
+                generatedAt=now_str,
+                size="12 KB",
+                format="JSON",
+                description="Holistic defensive security posture report: network visibility, portal flow, transport security, session tokens, RBAC access controls, segmentation, and hardening checklist.",
+                download_url="/api/v1/reports/export/security_assessment",
+            ),
         ]
+
 
     def generate_report(
         self,
@@ -250,10 +261,155 @@ class ReportService:
                     "ip_address": meta.get("ip_address"),
                     "timestamp": l.timestamp.isoformat() if l.timestamp else None,
                 })
+
+        elif report_type == "security_assessment":
+            title = "Security Assessment Report"
+            description = "Defensive posture assessment across network, portal, transport, session, RBAC, segmentation, and hardening."
+
+            from app.services.assessment_report_service import assessment_report_service
+            from app.schemas.security_assessment import SecurityAssessmentRunRequest
+
+            assessment = assessment_report_service.get_latest_assessment(db)
+            if not assessment:
+                assessment = assessment_report_service.run_full_assessment(
+                    db=db,
+                    user=user,
+                    request=SecurityAssessmentRunRequest(target="localhost:8000", authorized=True),
+                    client_ip=ip_address or "127.0.0.1"
+                )
+
+            summary_info = {
+                "target": assessment.target,
+                "status": assessment.status,
+                "assessment_timestamp": assessment.completed_at.isoformat() if assessment.completed_at else assessment.started_at.isoformat(),
+                "total_checks": assessment.summary.total_checks,
+                "passed_checks": assessment.summary.passed_checks,
+                "warning_checks": assessment.summary.warning_checks,
+                "failed_checks": assessment.summary.failed_checks,
+                "not_assessed_checks": assessment.summary.not_assessed_checks,
+                "findings_count": assessment.summary.findings_count,
+            }
+
+            # 1. Assessment Scope
+            data.append({
+                "category": "1. Assessment Scope",
+                "target": assessment.target,
+                "scope_type": "Authorized Enterprise Environment",
+                "assessment_id": assessment.id,
+                "status": "PASS",
+                "timestamp": assessment.started_at.isoformat(),
+            })
+
+            # 2. Network Observations
+            for s in assessment.network.services:
+                data.append({
+                    "category": "2. Network Observations",
+                    "port": s.port,
+                    "protocol": s.protocol,
+                    "service": s.service,
+                    "status": "PASS" if s.status == "observed" else ("NOT_ASSESSED" if s.status == "not_assessed" else "FAIL"),
+                    "observation": s.status,
+                })
+
+            # 3. Portal Analysis
+            for step in assessment.portal.redirect_chain:
+                data.append({
+                    "category": "3. Portal Analysis",
+                    "step": step.step,
+                    "url": step.url,
+                    "status_code": step.status_code,
+                    "label": step.label,
+                    "status": assessment.portal.status,
+                })
+
+            # 4. HTTP/HTTPS Analysis
+            data.append({
+                "category": "4. HTTP/HTTPS Analysis",
+                "https_status": assessment.http_https.https_status,
+                "redirect_status": assessment.http_https.redirect_status,
+                "login_transport": assessment.http_https.login_transport,
+                "status": assessment.http_https.status,
+                "explanation": assessment.http_https.explanation,
+            })
+
+            # 5. Session Analysis
+            data.append({
+                "category": "5. Session Analysis",
+                "auth_mechanism": assessment.session.auth_mechanism,
+                "expiration": assessment.session.expiration_configured,
+                "logout_invalidation": assessment.session.logout_invalidation,
+                "secure_cookie": assessment.session.cookie_secure,
+                "httponly_cookie": assessment.session.cookie_httponly,
+                "samesite_cookie": assessment.session.cookie_samesite,
+                "status": assessment.session.status,
+            })
+
+            # 6. Access-Control Results
+            for tc in assessment.access_control.test_cases:
+                data.append({
+                    "category": "6. Access-Control Results",
+                    "endpoint": tc.endpoint,
+                    "test_role": tc.test_role,
+                    "expected": tc.expected,
+                    "actual": tc.actual,
+                    "status": tc.result,
+                    "details": tc.details,
+                })
+
+            # 7. Network Segmentation
+            for path in assessment.segmentation.authorized_paths:
+                data.append({
+                    "category": "7. Network Segmentation",
+                    "source": path.source,
+                    "destination": path.destination,
+                    "protocol": path.protocol,
+                    "allowed": path.allowed,
+                    "status": path.status,
+                    "notes": path.notes,
+                })
+
+            # 8. Hardening Checklist
+            for cat in assessment.hardening.categories:
+                for item in cat.items:
+                    data.append({
+                        "category": f"8. Hardening Checklist - {cat.category}",
+                        "item_name": item.name,
+                        "status": item.status,
+                        "details": item.details,
+                    })
+
+            # 9. Findings
+            for f in assessment.findings:
+                data.append({
+                    "category": "9. Findings",
+                    "section": f.section,
+                    "title": f.title,
+                    "severity": f.severity,
+                    "status": f.status,
+                    "finding": f.finding,
+                    "recommendation": f.recommendation,
+                })
+
+            # 10. Recommendations
+            for idx, rec in enumerate(assessment.summary.recommendations, start=1):
+                data.append({
+                    "category": "10. Recommendations",
+                    "id": idx,
+                    "recommendation": rec,
+                    "status": "PASS",
+                })
+
+            # 11. Timestamp
+            data.append({
+                "category": "11. Timestamp",
+                "generated_at": now_str,
+                "status": "PASS",
+            })
         else:
             # Fallback report compilation from all tables
             title = "Custom Telemetry Report"
             summary_info = {"record_count": 0}
+
 
         size_kb = max(1, len(json.dumps(data)) // 1024)
 
