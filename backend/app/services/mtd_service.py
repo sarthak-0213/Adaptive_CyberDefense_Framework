@@ -30,7 +30,9 @@ class MTDService:
         # List of internal paths to protect/rotate
         self.protected_paths = [
             "/api/v1/auth/me",
-            "/api/v1/auth/logout"
+            "/api/v1/auth/logout",
+            "/gateway/api/admin/dashboard",
+            "/gateway/secureshop/api/admin/dashboard",
         ]
         
         # Load config and restore logs from database

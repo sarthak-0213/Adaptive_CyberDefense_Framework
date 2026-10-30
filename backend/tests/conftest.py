@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 # Set environment variables for testing before loading anything else
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+os.environ["REDIS_URL"] = ""
 os.environ["JWT_SECRET_KEY"] = "testaccesssecretkey"
 os.environ["JWT_REFRESH_SECRET_KEY"] = "testrefreshsecretkey"
 os.environ["MTD_ROTATION_INTERVAL_SECONDS"] = "2"  # Make it fast for tests
@@ -52,6 +53,7 @@ def setup_db():
     db_module.SessionLocal = original_session_local
 
     Base.metadata.drop_all(bind=engine)
+    engine.dispose()
 
     # Clear in-memory singletons so they don't bleed into the next test
     _clear_in_memory_state()
@@ -60,7 +62,7 @@ def setup_db():
     if os.path.exists("./test.db"):
         try:
             os.remove("./test.db")
-        except PermissionError:
+        except (PermissionError, Exception):
             pass
 
 

@@ -12,10 +12,15 @@ class RedisClient:
     def connect(self):
         if settings.REDIS_URL:
             try:
-                self._redis = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
+                self._redis = redis.Redis.from_url(
+                    settings.REDIS_URL,
+                    decode_responses=True,
+                    socket_connect_timeout=1.0,
+                    socket_timeout=1.0
+                )
                 self._redis.ping()
                 logger.info("Connected to Redis successfully.")
-            except redis.ConnectionError as e:
+            except (redis.ConnectionError, redis.TimeoutError, Exception) as e:
                 logger.warning(f"Could not connect to Redis: {e}. Falling back to in-memory/DB operations where applicable.")
                 self._redis = None
         else:

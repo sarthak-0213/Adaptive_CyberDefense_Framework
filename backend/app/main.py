@@ -17,6 +17,7 @@ from app.routers.audit import router as audit_router
 from app.routers.rbac import router as rbac_router
 from app.routers.reports import router as reports_router
 from app.routers.settings import router as settings_router
+from app.routers.gateway import router as gateway_router
 from app.services.mtd_service import mtd_service
 
 from slowapi.errors import RateLimitExceeded
@@ -70,17 +71,20 @@ async def lifespan(app: FastAPI):
         finally:
             db.close()
 
-    logger.info("Initializing default roles and permissions...")
-    _init_roles_and_permissions()
+    if not os.environ.get("TESTING"):
+        logger.info("Initializing default roles and permissions...")
+        _init_roles_and_permissions()
     
-    logger.info("Starting MTD rotation scheduler...")
-    await mtd_service.start_rotation_scheduler()
+    if not os.environ.get("TESTING"):
+        logger.info("Starting MTD rotation scheduler...")
+        await mtd_service.start_rotation_scheduler()
     
     yield
     
     # Shutdown actions
-    logger.info("Stopping MTD rotation scheduler...")
-    await mtd_service.stop_rotation_scheduler()
+    if not os.environ.get("TESTING"):
+        logger.info("Stopping MTD rotation scheduler...")
+        await mtd_service.stop_rotation_scheduler()
 
 
 app = FastAPI(
@@ -110,7 +114,7 @@ async def mtd_middleware(request: Request, call_next):
     path = request.url.path
     
     # Bypass MTD interception for docs and schema
-    if path.startswith("/docs") or path.startswith("/redoc") or path.startswith("/openapi.json"):
+    if path.startswith("/docs") or path.startswith("/redoc") or path.startswith("/openapi.json") or path.startswith("/api/v1/security/blocks"):
         return await call_next(request)
 
     # 1. Decoy path honeypot trap
@@ -195,7 +199,7 @@ async def threat_blocker_middleware(request: Request, call_next):
     path = request.url.path
     
     # Bypass blocking for documentation/schema
-    if path.startswith("/docs") or path.startswith("/redoc") or path.startswith("/openapi.json"):
+    if path.startswith("/docs") or path.startswith("/redoc") or path.startswith("/openapi.json") or path.startswith("/api/v1/security/blocks"):
         return await call_next(request)
 
     client_host = get_client_ip(request)
@@ -228,6 +232,7 @@ app.include_router(audit_router, prefix=settings.API_V1_STR)
 app.include_router(rbac_router, prefix=settings.API_V1_STR)
 app.include_router(reports_router, prefix=settings.API_V1_STR)
 app.include_router(settings_router, prefix=settings.API_V1_STR)
+app.include_router(gateway_router)
 
 
 @app.get("/")

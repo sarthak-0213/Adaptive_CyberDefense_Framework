@@ -16,6 +16,9 @@ from sqlalchemy.orm import Session
 
 from app.models.threat_block import ThreatBlock
 from app.models.threat_event import ThreatEvent, ThreatScore
+from app.models.gateway_log import GatewayRequestLog
+from app.services.mtd_service import mtd_service
+from app.schemas.security_analytics import GatewayLogOut
 from app.schemas.security_analytics import (
     RecalculateResponse,
     SecurityMetrics,
@@ -24,6 +27,8 @@ from app.schemas.security_analytics import (
     ThreatScoreOut,
     ThreatBlockOut,
     ManualBlockRequest,
+    ExternalSecurityEvent,
+    ExternalSecurityEventResponse,
 )
 from app.services.risk_engine import risk_engine
 from app.services.audit_service import audit_service
@@ -134,6 +139,41 @@ def get_security_metrics(
         for s in top_ips_query
     ]
 
+    # Gateway telemetry metrics
+    total_gateway_requests = db.query(GatewayRequestLog).count()
+    successful_requests = db.query(GatewayRequestLog).filter(GatewayRequestLog.status_code < 400).count()
+    failed_requests = db.query(GatewayRequestLog).filter(GatewayRequestLog.status_code >= 400).count()
+    suspicious_requests = db.query(GatewayRequestLog).filter(
+        GatewayRequestLog.classification.in_(["suspicious", "attack", "honeypot", "blocked"])
+    ).count()
+    threat_events_recorded = db.query(ThreatEvent).count()
+    requests_blocked = db.query(GatewayRequestLog).filter(
+        (GatewayRequestLog.status_code == 403) | (GatewayRequestLog.mitigation_action == "blocked_403")
+    ).count()
+    
+    max_score = db.query(func.max(ThreatScore.current_score)).scalar() or 0.0
+    current_highest_risk_score = round(float(max_score), 2)
+
+    if critical_threats > 0:
+        current_system_risk_level = "CRITICAL"
+    elif active_blocks > 0 or current_highest_risk_score >= 50.0:
+        current_system_risk_level = "HIGH"
+    elif current_highest_risk_score >= 25.0 or suspicious_requests > 0:
+        current_system_risk_level = "MEDIUM"
+    else:
+        current_system_risk_level = "LOW"
+
+    avg_latency = db.query(func.avg(GatewayRequestLog.response_time_ms)).scalar()
+    avg_gateway_latency_ms = round(float(avg_latency or 0.0), 2)
+    mtd_rotations_count = len(mtd_service.history)
+
+    recent_gateway_logs = (
+        db.query(GatewayRequestLog)
+        .order_by(GatewayRequestLog.timestamp.desc())
+        .limit(10)
+        .all()
+    )
+
     return SecurityMetrics(
         active_blocks=active_blocks,
         critical_threats=critical_threats,
@@ -141,6 +181,34 @@ def get_security_metrics(
         failed_logins_24h=failed_logins_24h,
         average_threat_score=average_threat_score,
         top_offending_ips=top_offending_ips,
+        total_gateway_requests=total_gateway_requests,
+        successful_requests=successful_requests,
+        failed_requests=failed_requests,
+        suspicious_requests=suspicious_requests,
+        threat_events_recorded=threat_events_recorded,
+        requests_blocked=requests_blocked,
+        current_system_risk_level=current_system_risk_level,
+        current_highest_risk_score=current_highest_risk_score,
+        mtd_rotations_count=mtd_rotations_count,
+        avg_gateway_latency_ms=avg_gateway_latency_ms,
+        recent_gateway_logs=recent_gateway_logs,
+    )
+
+
+# ── GET /security/gateway-logs ─────────────────────────────────────────────────
+
+@router.get("/gateway-logs", response_model=List[GatewayLogOut])
+def list_gateway_logs(
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_security_monitoring),
+):
+    """Return raw gateway request logs recorded by the perimeter gateway."""
+    return (
+        db.query(GatewayRequestLog)
+        .order_by(GatewayRequestLog.timestamp.desc())
+        .limit(limit)
+        .all()
     )
 
 
@@ -284,3 +352,29 @@ def manual_unblock_ip(
     )
     
     return block
+
+# ── POST /security/events ──────────────────────────────────────────────────────
+
+@router.post("/events", response_model=ExternalSecurityEventResponse, status_code=status.HTTP_201_CREATED)
+def record_external_event(
+    event_data: ExternalSecurityEvent,
+    db: Session = Depends(get_db),
+):
+    """
+    Ingest a security event from an integrated external application (like SecureShop).
+    Enriches with risk score calculation and triggers automated adaptive responses.
+    """
+    score_rec, level = risk_engine.record_event(
+        db=db,
+        ip_address=event_data.ip_address,
+        event_type=event_data.event_type,
+        source=event_data.source,
+        metadata=event_data.metadata,
+    )
+    return ExternalSecurityEventResponse(
+        status="recorded",
+        ip_address=event_data.ip_address,
+        current_score=round(score_rec.current_score, 2),
+        threat_level=level,
+        active_block=bool(score_rec.active_block_id),
+    )

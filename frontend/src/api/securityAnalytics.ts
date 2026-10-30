@@ -24,6 +24,20 @@ export interface ThreatDetail {
   events: ThreatEvent[];
 }
 
+export interface GatewayLog {
+  id: number;
+  timestamp: string;
+  ip_address: string;
+  method: string;
+  endpoint: string;
+  status_code: number;
+  response_time_ms: number;
+  classification: string;
+  detection_result?: string;
+  risk_score?: number;
+  mitigation_action?: string;
+}
+
 export interface SecurityMetrics {
   active_blocks: number;
   critical_threats: number;
@@ -35,6 +49,17 @@ export interface SecurityMetrics {
     current_score: number;
     threat_level: string;
   }[];
+  total_gateway_requests: number;
+  successful_requests: number;
+  failed_requests: number;
+  suspicious_requests: number;
+  threat_events_recorded: number;
+  requests_blocked: number;
+  current_system_risk_level: string;
+  current_highest_risk_score: number;
+  mtd_rotations_count: number;
+  avg_gateway_latency_ms: number;
+  recent_gateway_logs: GatewayLog[];
 }
 
 export interface RecalculateResponse {
@@ -77,6 +102,11 @@ export const recalculateScores = async (): Promise<RecalculateResponse> => {
 
 export const getBlocks = async (): Promise<ThreatBlock[]> => {
   const response = await api.get("/api/v1/security/blocks");
+  return response.data;
+};
+
+export const getGatewayLogs = async (limit: number = 50): Promise<GatewayLog[]> => {
+  const response = await api.get(`/api/v1/security/gateway-logs?limit=${limit}`);
   return response.data;
 };
 

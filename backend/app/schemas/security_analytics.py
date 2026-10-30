@@ -44,6 +44,25 @@ class ThreatDetail(BaseModel):
 
 # ─── Dashboard metrics ─────────────────────────────────────────────────────────
 
+# ─── Gateway Request Log ──────────────────────────────────────────────────────
+
+class GatewayLogOut(BaseModel):
+    id: int
+    timestamp: datetime
+    ip_address: str
+    method: str
+    endpoint: str
+    status_code: int
+    response_time_ms: float
+    classification: str
+    detection_result: Optional[str] = None
+    risk_score: Optional[float] = 0.0
+    mitigation_action: Optional[str] = "none"
+
+    class Config:
+        from_attributes = True
+
+
 class SecurityMetrics(BaseModel):
     active_blocks: int
     critical_threats: int
@@ -51,6 +70,19 @@ class SecurityMetrics(BaseModel):
     failed_logins_24h: int
     average_threat_score: float
     top_offending_ips: List[Dict[str, Any]]
+
+    # Real Gateway and Defense telemetry fields
+    total_gateway_requests: int = 0
+    successful_requests: int = 0
+    failed_requests: int = 0
+    suspicious_requests: int = 0
+    threat_events_recorded: int = 0
+    requests_blocked: int = 0
+    current_system_risk_level: str = "LOW"
+    current_highest_risk_score: float = 0.0
+    mtd_rotations_count: int = 0
+    avg_gateway_latency_ms: float = 0.0
+    recent_gateway_logs: List[GatewayLogOut] = []
 
 
 # ─── Recalculate response ──────────────────────────────────────────────────────
@@ -81,3 +113,16 @@ class ManualBlockRequest(BaseModel):
     reason: Optional[str] = "Manual admin block"
     duration_minutes: Optional[int] = 60
 
+
+class ExternalSecurityEvent(BaseModel):
+    ip_address: str
+    event_type: str
+    source: str = "external_website"
+    metadata: Optional[Dict[str, Any]] = None
+
+class ExternalSecurityEventResponse(BaseModel):
+    status: str
+    ip_address: str
+    current_score: float
+    threat_level: str
+    active_block: bool

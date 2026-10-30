@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone, timedelta
+from typing import Any, Optional
 import jwt
 from sqlalchemy.orm import Session
 

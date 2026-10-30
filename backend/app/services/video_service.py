@@ -15,10 +15,13 @@ from app.core.database import SessionLocal
 logger = logging.getLogger("video")
 
 # Lazy import for ultralytics to allow the service to start up or be tested even if imports fail
-try:
-    from ultralytics import YOLO
-except ImportError:
+if os.environ.get("TESTING") == "1":
     YOLO = None
+else:
+    try:
+        from ultralytics import YOLO
+    except (ImportError, Exception):
+        YOLO = None
 
 
 class VideoService:
