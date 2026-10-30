@@ -1,48 +1,27 @@
 # Adaptive Cyber Defense Framework — Architecture Specification
 
-This document details the architectural design and system workflows of the integrated Adaptive Cyber Defense Framework Adaptive Cyber Security & Surveillance System.
+This document details the architectural design and system workflows of the integrated Adaptive Cyber Defense Framework.
 
 ## Architecture Diagram
 
 ```text
-Frontend
+Frontend (React + Vite + TypeScript)
    |
    v
-FastAPI Backend
+FastAPI Backend Core Engine
    |
-   +---- Authentication (JWT)
+   +---- Authentication (JWT & Token Blacklisting)
    |
-   +---- MTD Middleware (Dynamic Routing)
+   +---- MTD Middleware (Dynamic Routing & Decoy Interception)
    |
-   +---- Alert API
+   +---- Threat Correlation & Adaptive Risk Engine
    |
-   +---- Camera API
+   +---- Threat Mitigation (Automated IP Blocking)
    |
-   v
-PostgreSQL / SQLite
-
-Camera
+   +---- Security Alerts & Audit Logging API
    |
    v
-Video Ingestion (OpenCV)
-   |
-   v
-YOLO PPE Model (ultralytics)
-   |
-   v
-Violation Detection (helmet/vest check)
-   |
-   v
-Safety Alert Generation
-   |
-   v
-FastAPI API Endpoint
-   |
-   v
-PostgreSQL
-   |
-   v
-Frontend Polling (Live dashboard refresh)
+PostgreSQL / SQLite Database
 ```
 
 ---
@@ -78,7 +57,7 @@ Attacker Request (Decoy / Real Endpoint Direct Access)
    |---> OR direct check to real protected paths (e.g. /api/v1/auth/me) without translation
    |---> Intercept request
    |---> Extract telemetry: IP, User-Agent, Headers
-   |---> Log to DB (HoneypotLog table) & raise security warnings in logs
+   |---> Log to DB (HoneypotLog table) & feed into Threat Correlation Risk Engine
    |
    v
 Response returned: Fake 404 error (No details revealed)
@@ -86,12 +65,14 @@ Response returned: Fake 404 error (No details revealed)
 
 ---
 
-## 2. Safety Analytics & YOLO Pipeline
+## 2. Threat Correlation & Risk Engine
 
-The system ingests CCTV video streams (or webcam/test videos) and runs real-time object detection to identify safety compliance violations.
+The system correlates raw security signals from multiple modules to calculate real-time threat scores per client IP:
 
-1. **Video Ingestion**: Background threads run OpenCV `VideoCapture` streams for active camera nodes.
-2. **YOLO PPE Detection**: Frames are passed to the YOLOv8 model (`best.pt`) configured at `MODEL_PATH`.
-3. **Violation Logic**: The pipeline processes bounding boxes to detect if `person` detections exist without matching `helmet` or `vest` detections (or if direct `no-helmet`/`no-vest` labels are detected).
-4. **Intrusion Alerts**: Violations are throttled using a 15-second cooldown per camera to avoid database spam.
-5. **Dashboard Rendering**: The React frontend polls the backend alerts API, rendering real-time alarms and live streams marked with YOLO detections.
+1. **Signal Aggregation**: Auth failures, honeypot hits, direct protected path access, expired alias hits, and token tampering events are captured.
+2. **Weighted Scoring**: Each event type incurs a weighted penalty score.
+3. **Time-Based Decay**: Inactive threat scores decay automatically over time.
+4. **Adaptive Response**:
+   - **MEDIUM Risk**: Increases telemetry logging.
+   - **HIGH Risk**: Triggers automated 5-minute IP block.
+   - **CRITICAL Risk**: Triggers 30-minute IP isolation, token invalidation, and external notifications.

@@ -7,13 +7,16 @@ ROLE_PERMISSIONS = {
         "notification_configuration",
         "system_administration",
         "alert_resolution",
+        "security_assessment",
     ],
     "analyst": [
         "security_monitoring",
         "threat_management",
         "alert_resolution",
+        "security_assessment",
     ],
     "user": [
         "security_monitoring"
     ]
 }
+

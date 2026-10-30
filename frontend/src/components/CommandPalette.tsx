@@ -3,7 +3,6 @@ import { Command } from "cmdk";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
-  Camera,
   TriangleAlert,
   Shield,
   Activity,
@@ -57,9 +56,6 @@ export function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (ope
           <Command.Group heading="Navigation" className="text-xs font-medium text-[var(--text-secondary)] px-2 py-1">
             <Command.Item onSelect={() => runCommand(() => navigate("/"))} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm text-[var(--text-primary)] aria-selected:bg-[var(--accent-blue)] aria-selected:text-white">
               <LayoutDashboard className="h-4 w-4" /> Dashboard
-            </Command.Item>
-            <Command.Item onSelect={() => runCommand(() => navigate("/cameras"))} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm text-[var(--text-primary)] aria-selected:bg-[var(--accent-blue)] aria-selected:text-white">
-              <Camera className="h-4 w-4" /> Cameras
             </Command.Item>
             <Command.Item onSelect={() => runCommand(() => navigate("/alerts"))} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm text-[var(--text-primary)] aria-selected:bg-[var(--accent-blue)] aria-selected:text-white">
               <TriangleAlert className="h-4 w-4" /> Alerts

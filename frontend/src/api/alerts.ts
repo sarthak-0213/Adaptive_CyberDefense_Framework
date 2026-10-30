@@ -2,7 +2,6 @@ import api from "./client";
 import type { Alert } from "../types/dashboard";
 
 export interface AlertInput {
-  camera_id: number;
   title: string;
   violation_type: string;
   severity?: string;

@@ -9,7 +9,6 @@ from app.core.database import Base, engine
 from app.core.logging import setup_logging
 from app.routers.auth import router as auth_router
 from app.routers.mtd import router as mtd_router
-from app.routers.video import router as video_router
 from app.routers.alerts import router as alerts_router
 from app.routers.security_analytics import router as security_analytics_router
 from app.routers.notifications import router as notifications_router
@@ -18,7 +17,9 @@ from app.routers.rbac import router as rbac_router
 from app.routers.reports import router as reports_router
 from app.routers.settings import router as settings_router
 from app.routers.gateway import router as gateway_router
+from app.routers.security_assessment import router as security_assessment_router
 from app.services.mtd_service import mtd_service
+
 
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
@@ -224,7 +225,6 @@ async def threat_blocker_middleware(request: Request, call_next):
 # Include Routers
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(mtd_router, prefix=settings.API_V1_STR)
-app.include_router(video_router, prefix=settings.API_V1_STR)
 app.include_router(alerts_router, prefix=settings.API_V1_STR)
 app.include_router(security_analytics_router, prefix=settings.API_V1_STR)
 app.include_router(notifications_router, prefix=settings.API_V1_STR)
@@ -232,6 +232,7 @@ app.include_router(audit_router, prefix=settings.API_V1_STR)
 app.include_router(rbac_router, prefix=settings.API_V1_STR)
 app.include_router(reports_router, prefix=settings.API_V1_STR)
 app.include_router(settings_router, prefix=settings.API_V1_STR)
+app.include_router(security_assessment_router, prefix=settings.API_V1_STR)
 app.include_router(gateway_router)
 
 

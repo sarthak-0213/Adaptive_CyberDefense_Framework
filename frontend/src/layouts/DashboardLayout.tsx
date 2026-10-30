@@ -2,7 +2,6 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard,
-  Camera,
   TriangleAlert,
   Shield,
   Activity,
@@ -10,6 +9,7 @@ import {
   Settings,
   LogOut,
   Search,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { logoutApi } from "../api/auth";
@@ -21,13 +21,14 @@ import { PageTransition } from "../components/PageTransition";
 
 const menuItems = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard },
-  { name: "Cameras", path: "/cameras", icon: Camera },
   { name: "Alerts", path: "/alerts", icon: TriangleAlert },
   { name: "Security", path: "/security", icon: Shield },
   { name: "Threat Analytics", path: "/threats", icon: Activity },
+  { name: "Security Assessment", path: "/security-assessment", icon: ShieldCheck },
   { name: "Reports", path: "/reports", icon: FileBarChart },
   { name: "Settings", path: "/settings", icon: Settings },
 ];
+
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -45,7 +46,7 @@ export default function DashboardLayout() {
   const displayRole = user?.role ? user.role.toUpperCase() : "NO ROLE";
   const avatarLetter = user?.email ? user.email.charAt(0).toUpperCase() : "U";
 
-  const isDensePage = ["/reports", "/security", "/threats", "/alerts"].includes(location.pathname);
+  const isDensePage = ["/reports", "/security", "/threats", "/alerts", "/security-assessment"].includes(location.pathname);
 
   return (
     <div className="relative flex h-screen overflow-hidden bg-[var(--background)] text-[var(--text-primary)]">

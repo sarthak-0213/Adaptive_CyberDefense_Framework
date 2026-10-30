@@ -1,7 +1,7 @@
 """
 Threat Correlation Service — bridges raw security signal sources to the Risk Engine.
 
-Each source (auth, MTD, surveillance) calls the relevant method here.
+Each source (auth, MTD) calls the relevant method here.
 This service normalises the event, enriches it with metadata, then delegates
 to risk_engine.record_event().
 """
@@ -100,24 +100,6 @@ class ThreatCorrelationService:
             event_type="mtd_alias_enumeration",
             source="mtd",
             metadata={"aliases_tried": aliases_tried},
-        )
-
-    # ── Surveillance anomalies ─────────────────────────────────────────────────
-
-    def on_camera_anomaly(
-        self,
-        db: Session,
-        ip_address: str,
-        camera_id: int,
-        anomaly_type: str,
-    ) -> None:
-        """Record a surveillance-related anomaly."""
-        risk_engine.record_event(
-            db=db,
-            ip_address=ip_address,
-            event_type="camera_anomaly",
-            source="surveillance",
-            metadata={"camera_id": camera_id, "anomaly_type": anomaly_type},
         )
 
 

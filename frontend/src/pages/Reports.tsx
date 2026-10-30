@@ -122,7 +122,7 @@ export default function Reports() {
             </span>
           </div>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Automated compliance reporting, camera PPE violation logs, honeypot events & MTD telemetry.
+            Automated security compliance reporting, incident violation logs, honeypot events & MTD telemetry.
           </p>
         </div>
 

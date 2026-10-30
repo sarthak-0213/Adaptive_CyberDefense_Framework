@@ -10,14 +10,13 @@ class ReportSummary(BaseModel):
     active_alerts_count: int
     mtd_rotations_count: int
     total_audit_logs: int
-    camera_violations_count: int
     last_generated: Optional[str] = None
 
 
 class ReportItem(BaseModel):
     id: str
     title: str
-    type: str  # "Security Audit", "Incident Log", "Camera Performance", "MTD Analytics", "System Audit Log"
+    type: str  # "Security Audit", "Incident Log", "MTD Analytics", "System Audit Log"
     generatedAt: str
     size: str
     format: str  # "PDF", "CSV", "JSON"
@@ -26,7 +25,7 @@ class ReportItem(BaseModel):
 
 
 class ReportGenerateRequest(BaseModel):
-    report_type: str  # "security_audit", "incident_log", "camera_performance", "mtd_analytics", "audit_log"
+    report_type: str  # "security_audit", "incident_log", "mtd_analytics", "audit_log"
     format: str = "JSON"  # "JSON", "CSV", "PDF"
     date_range: Optional[str] = "24h"  # "24h", "7d", "30d", "all"
 

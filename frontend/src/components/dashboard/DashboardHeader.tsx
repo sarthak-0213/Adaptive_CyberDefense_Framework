@@ -33,7 +33,7 @@ export default function DashboardHeader({ onRefresh }: DashboardHeaderProps) {
           </span>
         </div>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          Real-time cyber defense telemetry, camera surveillance &amp; MTD dynamic
+          Real-time cyber defense telemetry, security incident logging &amp; MTD dynamic
           threat response.
         </p>
       </div>

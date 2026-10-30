@@ -7,7 +7,6 @@ Scoring weights (configurable via settings):
   failed_login               +10
   expired_alias_access       +15
   blacklisted_token_usage    +50
-  camera_anomaly             +20
   rapid_login_attempt        +10
   invalid_refresh_token      +15
   mtd_alias_enumeration      +20
@@ -43,7 +42,6 @@ EVENT_WEIGHTS: Dict[str, float] = {
     "failed_login": 10.0,
     "expired_alias_access": 15.0,
     "blacklisted_token_usage": 50.0,
-    "camera_anomaly": 20.0,
     "rapid_login_attempt": 10.0,
     "invalid_refresh_token": 15.0,
     "mtd_alias_enumeration": 20.0,
