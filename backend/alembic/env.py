@@ -24,7 +24,6 @@ target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
-    # Re-use the db engine url
     url = str(engine.url)
     context.configure(
         url=url,
@@ -38,11 +37,23 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
-    
-    Re-use the application engine which has automatic SQLite fallback if PostgreSQL is down.
-    """
+    """Run migrations in 'online' mode."""
     connectable = engine
+
+    # Validate that in production, migrations are not executing against SQLite
+    is_render = bool(os.environ.get("RENDER"))
+    is_prod_env = os.environ.get("ENVIRONMENT", "").lower() in ("production", "prod") or os.environ.get("ENV", "").lower() in ("production", "prod")
+    dialect_name = engine.url.get_dialect().name
+
+    safe_url = engine.url.render_as_string(hide_password=True)
+    print(f"[Alembic] Running migrations against database: {safe_url} (dialect: {dialect_name})")
+
+    if (is_render or is_prod_env) and dialect_name == "sqlite":
+        raise RuntimeError(
+            f"[Alembic] CRITICAL FAILURE: Cannot run production migrations against SQLite ({safe_url}). "
+            "Production deployments require a reachable PostgreSQL database. "
+            "Please verify that DATABASE_URL is set in Render environment variables."
+        )
 
     with connectable.connect() as connection:
         context.configure(

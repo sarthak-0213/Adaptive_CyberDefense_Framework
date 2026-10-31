@@ -19,17 +19,26 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str, info) -> str:
-        # If DATABASE_URL is set in environment, use it. Otherwise, build it.
-        if v and isinstance(v, str) and v != "postgresql://postgres:postgres@db:5432/cyberdefense":
-            return v
-        
+        # Check environment variable directly first
+        env_url = os.environ.get("DATABASE_URL")
+        if env_url:
+            v = env_url.strip()
+
+        # If DATABASE_URL is set, normalize legacy Render/Heroku 'postgres://' scheme to 'postgresql://'
+        if v and isinstance(v, str):
+            v = v.strip()
+            if v.startswith("postgres://"):
+                v = v.replace("postgres://", "postgresql://", 1)
+            if v != "postgresql://postgres:postgres@db:5432/cyberdefense":
+                return v
+
         # Build URL dynamically from components
-        data = info.data
-        server = data.get("POSTGRES_SERVER", "db")
-        user = data.get("POSTGRES_USER", "postgres")
-        password = data.get("POSTGRES_PASSWORD", "postgres")
-        db = data.get("POSTGRES_DB", "cyberdefense")
-        
+        data = info.data if hasattr(info, "data") else {}
+        server = os.environ.get("POSTGRES_SERVER") or (data.get("POSTGRES_SERVER") if isinstance(data, dict) else None) or "db"
+        user = os.environ.get("POSTGRES_USER") or (data.get("POSTGRES_USER") if isinstance(data, dict) else None) or "postgres"
+        password = os.environ.get("POSTGRES_PASSWORD") or (data.get("POSTGRES_PASSWORD") if isinstance(data, dict) else None) or "postgres"
+        db = os.environ.get("POSTGRES_DB") or (data.get("POSTGRES_DB") if isinstance(data, dict) else None) or "cyberdefense"
+
         return f"postgresql://{user}:{password}@{server}:5432/{db}"
 
     # JWT Settings

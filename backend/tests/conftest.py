@@ -40,6 +40,28 @@ def _clear_in_memory_state():
 def setup_db():
     Base.metadata.create_all(bind=engine)
 
+    # Seed default roles and permissions for RBAC enforcement in tests
+    from app.models.rbac import Role, Permission
+    from app.core.rbac import ROLE_PERMISSIONS
+    seed_db = TestingSessionLocal()
+    try:
+        for role_name, perms in ROLE_PERMISSIONS.items():
+            role = Role(name=role_name)
+            seed_db.add(role)
+            seed_db.commit()
+            seed_db.refresh(role)
+            for p_name in perms:
+                perm = seed_db.query(Permission).filter(Permission.name == p_name).first()
+                if not perm:
+                    perm = Permission(name=p_name)
+                    seed_db.add(perm)
+                    seed_db.commit()
+                    seed_db.refresh(perm)
+                role.permissions.append(perm)
+        seed_db.commit()
+    finally:
+        seed_db.close()
+
     # ── Redirect all direct SessionLocal() calls in middleware / services
     #    to use the test database so there is no cross-contamination between
     #    the test DB and app.db during HTTP-level tests.
